@@ -1,0 +1,72 @@
+BidDocMagic - License
+=========================================
+
+Copyright (c) 2026-present Hainan Neowo Digital Technology Co., Ltd.
+
+Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+
+-----------------------------------------------------------------------
+
+## Section 1: License Grant
+
+This work is licensed under the terms of the GNU Affero General Public
+License v3.0 (hereinafter "AGPL-3.0").
+
+Full text of AGPL-3.0: https://www.gnu.org/licenses/agpl-3.0.html
+
+## Section 2: Definitions
+
+"Software" means the BidDocMagic project and all its source
+code, binaries, documentation, and related materials.
+
+"Derivative Works" means any modifications, enhancements, extensions, or
+integrated works based on the Software.
+
+## Section 3: Third-Party Library Licenses
+
+This Software references the following third-party libraries, each
+governed by its respective license:
+
+1. iTextSharp-LGPL 4.1.6
+   License: GNU Lesser General Public License v2.1 (LGPL-2.1)
+   Note: May be used as a dynamically linked library in commercial or
+         non-commercial software, but modifications to the iTextSharp
+         library itself must be open-sourced under LGPL.
+
+2. PDFiumSharp 1.4660.0-alpha1
+   License: Apache License 2.0
+   Note: Free to use, modify, and distribute; must retain copyright
+         and license notices.
+
+3. PDFiumSharp.NativeBinaries 1.4660.0 (pdfium.dll)
+   License: BSD 3-Clause License
+   Note: Free to use; must retain copyright notice.
+
+4. System.Memory 4.5.5, System.Buffers 4.5.1,
+   System.Runtime.CompilerServices.Unsafe 4.5.3
+   License: MIT License
+   Note: Free to use; must retain copyright notice.
+
+Use, modification, and distribution of third-party libraries remain
+subject to their respective original license terms.
+
+## Section 4: Source Code Availability
+
+In accordance with AGPL-3.0 requirements, any user who distributes this
+Software (including through network interaction) must provide recipients
+with a means to obtain the complete source code of the Software, and the
+source code must be provided under the same license terms (AGPL-3.0).
+
+## Section 5: Disclaimer of Warranty
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-----------------------------------------------------------------------
+
+AGPL-3.0 Reference: https://www.gnu.org/licenses/agpl-3.0.html

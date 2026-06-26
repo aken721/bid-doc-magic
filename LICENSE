@@ -1,0 +1,63 @@
+BidDocMagic - 开源许可协议
+=========================================
+
+版权所有 (c) 2026-present 海南纽沃数字科技有限公司
+
+本项目基于 GNU Affero General Public License v3.0 (AGPL-3.0) 开源。
+
+-----------------------------------------------------------------------
+
+## 第1条：授权许可
+
+本作品依据 GNU Affero General Public License v3.0（以下简称 AGPL-3.0）
+的条款进行许可。
+
+AGPL-3.0 全文见：https://www.gnu.org/licenses/agpl-3.0.html
+
+## 第2条：定义
+
+"本软件"指 BidDocMagic 项目及其全部源代码、二进制文件、
+文档和相关材料。
+
+"衍生作品"指基于本软件的任何修改、增强、扩展或集成作品。
+
+## 第3条：第三方库许可声明
+
+本软件引用了以下第三方库，各库受其各自许可协议约束：
+
+1. iTextSharp-LGPL 4.1.6
+   许可：GNU Lesser General Public License v2.1 (LGPL-2.1)
+   说明：可作为动态链接库使用于商业或非商业软件中，但修改
+         iTextSharp 库本身必须以 LGPL 开源。
+
+2. PDFiumSharp 1.4660.0-alpha1
+   许可：Apache License 2.0
+   说明：可自由使用、修改和分发，需保留版权和许可声明。
+
+3. PDFiumSharp.NativeBinaries 1.4660.0 (pdfium.dll)
+   许可：BSD 3-Clause License
+   说明：可自由使用，需保留版权声明。
+
+4. System.Memory 4.5.5, System.Buffers 4.5.1,
+   System.Runtime.CompilerServices.Unsafe 4.5.3
+   许可：MIT License
+   说明：可自由使用，需保留版权声明。
+
+第三方库的使用、修改和分发仍遵循其各自的原始许可协议。
+
+## 第4条：源代码提供
+
+依据 AGPL-3.0 的要求，任何分发本软件（包括网络交互方式）的
+用户，必须向接收者提供本软件完整源代码的获取方式，且源代码
+必须同样基于 AGPL-3.0 许可协议提供。
+
+## 第5条：免责声明
+
+本软件按"原样"提供，不做任何明示或暗示的保证，包括但不限于
+适销性和特定用途适用性的暗示保证。在任何情况下，版权所有人
+或贡献者均不对因使用本软件而产生的任何直接、间接、附带、特殊、
+惩罚性或后果性损害承担责任。
+
+-----------------------------------------------------------------------
+
+AGPL-3.0 参考来源：https://www.gnu.org/licenses/agpl-3.0.html
