@@ -211,64 +211,56 @@ namespace DualLayerPdfConverter
         static void PreloadNativeDlls()
         {
             string asmDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string[] nativeDlls = { "pdfium.dll" };
+            if (string.IsNullOrEmpty(asmDir)) return;
 
-            var searchDirs = new List<string>();
-            try { if (!string.IsNullOrEmpty(asmDir)) searchDirs.Add(asmDir); } catch { }
-            try { searchDirs.Add(AppDomain.CurrentDomain.BaseDirectory); } catch { }
+            bool is64Bit = IntPtr.Size == 8;
+            string srcName = is64Bit ? "pdfium_x64.dll" : "pdfium_x86.dll";
+            string archSubDir = is64Bit ? "x64" : "x86";
 
-            string libDir = Path.Combine(Path.GetDirectoryName(asmDir) ?? asmDir, "Lib");
-            if (Directory.Exists(libDir)) searchDirs.Add(libDir);
-
-            libDir = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(asmDir) ?? "") ?? "", "Lib");
-            if (Directory.Exists(libDir)) searchDirs.Add(libDir);
-
-            foreach (string dllName in nativeDlls)
+            string[] candidates = new[]
             {
-                foreach (string dir in searchDirs)
+                Path.Combine(asmDir, srcName),
+                Path.Combine(asmDir, archSubDir, "pdfium.dll"),
+                Path.Combine(asmDir, "pdfium.dll"),
+            };
+
+            string srcPath = candidates.FirstOrDefault(p => File.Exists(p));
+            if (srcPath == null) return;
+
+            string dstPath = Path.Combine(asmDir, "pdfium.dll");
+
+            if (srcPath != dstPath)
+            {
+                try
                 {
-                    try
+                    bool needCopy = !File.Exists(dstPath);
+                    if (!needCopy)
                     {
-                        string srcPath = Path.Combine(dir, dllName);
-                        string dstPath = Path.Combine(asmDir, dllName);
-                        if (File.Exists(srcPath) && !string.IsNullOrEmpty(asmDir))
-                        {
-                            bool needCopy = !File.Exists(dstPath);
-                            if (!needCopy)
-                            {
-                                var srcInfo = new FileInfo(srcPath);
-                                var dstInfo = new FileInfo(dstPath);
-                                needCopy = srcInfo.Length != dstInfo.Length;
-                            }
-                            if (needCopy) File.Copy(srcPath, dstPath, true);
-                        }
+                        var srcInfo = new FileInfo(srcPath);
+                        var dstInfo = new FileInfo(dstPath);
+                        needCopy = srcInfo.Length != dstInfo.Length;
                     }
-                    catch { }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(asmDir))
-            {
-                try
-                {
-                    SetDllDirectory(asmDir);
-                    string currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
-                    if (!currentPath.Contains(asmDir))
-                        Environment.SetEnvironmentVariable("PATH", currentPath + ";" + asmDir);
+                    if (needCopy) File.Copy(srcPath, dstPath, true);
                 }
                 catch { }
             }
 
-            foreach (string dllName in nativeDlls)
+            try
             {
-                try
-                {
-                    string dllPath = Path.Combine(asmDir, dllName);
-                    if (File.Exists(dllPath))
-                        LoadLibrary(dllPath);
-                }
-                catch { }
+                SetDllDirectory(asmDir);
+                string currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+                if (!currentPath.Contains(asmDir))
+                    Environment.SetEnvironmentVariable("PATH", currentPath + ";" + asmDir);
             }
+            catch { }
+
+            try
+            {
+                string dllPath = File.Exists(dstPath) ? dstPath : srcPath;
+                if (File.Exists(dllPath))
+                    LoadLibrary(dllPath);
+            }
+            catch { }
         }
 
         [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]

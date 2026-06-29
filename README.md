@@ -20,7 +20,7 @@ The project provides two usage modes:
 - Convert DOCX to dual-layer PDF with one click / one command
 - **Batch directory conversion**: Convert all Word/PDF files in a folder at once
 - PDFium rendering engine (fast, built-in)
-- Multi-threaded rendering and composition for faster conversion
+- Multi-threaded PDF composition for faster conversion
 - Configurable DPI (150-1200, default 300)
 - Support direct PDF input (skip Word-to-PDF step)
 - Automatic native DLL discovery and preloading
@@ -74,7 +74,7 @@ Input (.docx/.pdf)
 ```powershell
 cd skills/dual-layer-pdf/src
 nuget restore packages.config -PackagesDirectory packages
-msbuild DualLayerPdfConverter.csproj /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
+msbuild DualLayerPdfConverter.csproj /p:Configuration=Release /p:Platform=AnyCPU /verbosity:minimal
 # Output: src/bin/Release/DualLayerPdfConverter.exe
 ```
 
@@ -85,7 +85,7 @@ msbuild DualLayerPdfConverter.csproj /p:Configuration=Release /p:Platform=x64 /v
 DualLayerPdfConverter.exe -i "C:\docs\report.docx"
 
 # Convert with options
-DualLayerPdfConverter.exe -i "C:\docs\report.docx" -d 600 -t 4
+DualLayerPdfConverter.exe -i "C:\docs\report.docx" -d 300 -t 4
 
 # Convert an existing PDF to dual-layer
 DualLayerPdfConverter.exe -i "C:\docs\existing.pdf" --pdf-input
@@ -153,7 +153,7 @@ BidDocMagic/
 
 ## System Requirements
 
-- Windows x64
+- Windows x86/x64
 - .NET Framework 4.8
 - Microsoft Word 2013+ (for DOCX → PDF conversion; not needed with `--pdf-input`)
 
@@ -181,7 +181,7 @@ See [LICENSE](LICENSE) (Chinese) / [LICENSE.en](LICENSE.en) (English) for detail
 - 一键/一条命令将 DOCX 转换为双层 PDF
 - **目录批量转换**：一次性转换文件夹内所有 Word/PDF 文件
 - PDFium 渲染引擎（内置，快速渲染）
-- 多线程渲染和合成，加速转换过程
+- 多线程PDF合成，加速转换过程
 - 可配置 DPI（150-1200，默认 300）
 - 支持直接输入 PDF（跳过 Word 转 PDF 步骤）
 - 自动发现和预加载原生 DLL
@@ -235,7 +235,7 @@ See [LICENSE](LICENSE) (Chinese) / [LICENSE.en](LICENSE.en) (English) for detail
 ```powershell
 cd skills/dual-layer-pdf/src
 nuget restore packages.config -PackagesDirectory packages
-msbuild DualLayerPdfConverter.csproj /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
+msbuild DualLayerPdfConverter.csproj /p:Configuration=Release /p:Platform=AnyCPU /verbosity:minimal
 # 输出：src/bin/Release/DualLayerPdfConverter.exe
 ```
 
@@ -246,7 +246,7 @@ msbuild DualLayerPdfConverter.csproj /p:Configuration=Release /p:Platform=x64 /v
 DualLayerPdfConverter.exe -i "C:\docs\report.docx"
 
 # 带选项转换
-DualLayerPdfConverter.exe -i "C:\docs\report.docx" -d 600 -t 4
+DualLayerPdfConverter.exe -i "C:\docs\report.docx" -d 300 -t 4
 
 # 将已有 PDF 转换为双层
 DualLayerPdfConverter.exe -i "C:\docs\existing.pdf" --pdf-input
@@ -314,7 +314,7 @@ BidDocMagic/
 
 ## 系统要求
 
-- Windows x64
+- Windows x86/x64
 - .NET Framework 4.8
 - Microsoft Word 2013+（用于 DOCX → PDF 转换；使用 `--pdf-input` 时不需要）
 

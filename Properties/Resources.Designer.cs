@@ -63,6 +63,26 @@ namespace BidDocMagic.Properties {
         /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
+        internal static System.Drawing.Bitmap BidDocMagic {
+            get {
+                object obj = ResourceManager.GetObject("BidDocMagic", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Byte[] 类型的本地化资源。
+        /// </summary>
+        internal static byte[] BidDocMagic_ico {
+            get {
+                object obj = ResourceManager.GetObject("BidDocMagic_ico", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
         internal static System.Drawing.Bitmap PDF {
             get {
                 object obj = ResourceManager.GetObject("PDF", resourceCulture);
@@ -77,26 +97,6 @@ namespace BidDocMagic.Properties {
             get {
                 object obj = ResourceManager.GetObject("pdf_setting", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Bitmap Word插件 {
-            get {
-                object obj = ResourceManager.GetObject("Word插件", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似于 (图标) 的 System.Drawing.Icon 类型的本地化资源。
-        /// </summary>
-        internal static System.Drawing.Icon Word插件1 {
-            get {
-                object obj = ResourceManager.GetObject("Word插件1", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
             }
         }
     }

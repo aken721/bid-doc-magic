@@ -21,148 +21,103 @@ namespace BidDocMagic
             PreloadNativeDlls();
         }
 
-        private void PreloadNativeDlls()
+        private static readonly string NativeDir = Path.Combine(Path.GetTempPath(), "BidDocMagic");
+
+        private static string GetDeploymentDir()
         {
-            string asmDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-            string[] nativeDlls = new string[] { "pdfium.dll" };
-
-            string sourceDir = FindNativeDllDirectory();
-
-            if (sourceDir != null && !string.IsNullOrEmpty(asmDir))
-            {
-                foreach (string dllName in nativeDlls)
-                {
-                    try
-                    {
-                        string srcPath = Path.Combine(sourceDir, dllName);
-                        string dstPath = Path.Combine(asmDir, dllName);
-
-                        if (File.Exists(srcPath))
-                        {
-                            bool needCopy = !File.Exists(dstPath);
-                            if (!needCopy)
-                            {
-                                var srcInfo = new FileInfo(srcPath);
-                                var dstInfo = new FileInfo(dstPath);
-                                needCopy = srcInfo.Length != dstInfo.Length;
-                            }
-
-                            if (needCopy)
-                            {
-                                File.Copy(srcPath, dstPath, true);
-                            }
-                        }
-                    }
-                    catch { }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(asmDir))
-            {
-                SetDllDirectory(asmDir);
-                string currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
-                if (!currentPath.Contains(asmDir))
-                {
-                    Environment.SetEnvironmentVariable("PATH", currentPath + ";" + asmDir);
-                }
-            }
-
-            foreach (string dllName in nativeDlls)
-            {
-                try
-                {
-                    string dllPath = Path.Combine(asmDir, dllName);
-                    if (!File.Exists(dllPath) && sourceDir != null)
-                    {
-                        dllPath = Path.Combine(sourceDir, dllName);
-                    }
-
-                    if (File.Exists(dllPath))
-                    {
-                        IntPtr hModule = LoadLibrary(dllPath);
-                        if (hModule == IntPtr.Zero)
-                        {
-                            int err = Marshal.GetLastWin32Error();
-                            System.Diagnostics.Debug.WriteLine($"LoadLibrary({dllPath}) failed, error={err}");
-                        }
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Native DLL not found: {dllName}");
-                    }
-                }
-                catch { }
-            }
-        }
-
-        private string FindNativeDllDirectory()
-        {
-            var searchDirs = new List<string>();
-
             try
             {
-                string asmDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                if (!string.IsNullOrEmpty(asmDir)) searchDirs.Add(asmDir);
+                var codeBase = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+                var uri = new Uri(codeBase);
+                return Path.GetDirectoryName(uri.LocalPath);
             }
             catch { }
 
             try
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                if (!string.IsNullOrEmpty(baseDir)) searchDirs.Add(baseDir);
+                return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             }
             catch { }
-
-            try
-            {
-                string asmDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                if (!string.IsNullOrEmpty(asmDir))
-                {
-                    string parentDir = Path.GetDirectoryName(Path.GetDirectoryName(asmDir));
-                    if (!string.IsNullOrEmpty(parentDir))
-                    {
-                        searchDirs.Add(Path.Combine(parentDir, "Debug"));
-                        searchDirs.Add(Path.Combine(parentDir, "Release"));
-                        searchDirs.Add(Path.Combine(parentDir, "x64", "Debug"));
-                        searchDirs.Add(Path.Combine(parentDir, "x64", "Release"));
-                    }
-                }
-            }
-            catch { }
-
-            try
-            {
-                string asmDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                if (!string.IsNullOrEmpty(asmDir) && asmDir.Contains("AppData"))
-                {
-                    string[] knownPaths = new string[]
-                    {
-                        @"E:\SourceCode\Csharp\BidDocMagic-Free\BidDocMagic\bin\Debug",
-                        @"E:\SourceCode\Csharp\BidDocMagic-Free\BidDocMagic\bin\x64\Debug",
-                        @"E:\SourceCode\Csharp\BidDocMagic-Free\BidDocMagic\bin\Release",
-                    };
-                    foreach (string p in knownPaths)
-                    {
-                        if (Directory.Exists(p)) searchDirs.Add(p);
-                    }
-                }
-            }
-            catch { }
-
-            foreach (string dir in searchDirs)
-            {
-                if (string.IsNullOrEmpty(dir)) continue;
-                try
-                {
-                    if (File.Exists(Path.Combine(dir, "pdfium.dll")))
-                        return dir;
-                }
-                catch { }
-            }
 
             return null;
         }
+
+        private void PreloadNativeDlls()
+        {
+            string deployDir = GetDeploymentDir();
+            if (string.IsNullOrEmpty(deployDir)) return;
+
+            bool is64Bit = IntPtr.Size == 8;
+            string srcName = is64Bit ? "pdfium_x64.dll" : "pdfium_x86.dll";
+            string archSubDir = is64Bit ? "x64" : "x86";
+
+            string[] candidates = new[]
+            {
+                Path.Combine(deployDir, srcName),
+                Path.Combine(deployDir, archSubDir, "pdfium.dll"),
+                Path.Combine(deployDir, "pdfium.dll"),
+            };
+
+            string srcPath = candidates.FirstOrDefault(p => File.Exists(p));
+            if (srcPath == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"BidDocMagic: pdfium.dll not found for {archSubDir}, searched: {string.Join("; ", candidates)}");
+                return;
+            }
+
+            string nativeDir = NativeDir;
+            try { Directory.CreateDirectory(nativeDir); } catch { }
+
+            string dstPath = Path.Combine(nativeDir, "pdfium.dll");
+
+            try
+            {
+                bool needCopy = !File.Exists(dstPath);
+                if (!needCopy)
+                {
+                    var srcInfo = new FileInfo(srcPath);
+                    var dstInfo = new FileInfo(dstPath);
+                    needCopy = srcInfo.Length != dstInfo.Length;
+                }
+                if (needCopy)
+                    File.Copy(srcPath, dstPath, true);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"BidDocMagic: Copy to {dstPath} failed: {ex.Message}");
+            }
+
+            string loadDir = File.Exists(dstPath) ? nativeDir : Path.GetDirectoryName(srcPath);
+
+            try
+            {
+                SetDllDirectory(loadDir);
+                string currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+                if (!currentPath.Contains(loadDir))
+                    Environment.SetEnvironmentVariable("PATH", currentPath + ";" + loadDir);
+            }
+            catch { }
+
+            try
+            {
+                string loadPath = File.Exists(dstPath) ? dstPath : srcPath;
+                IntPtr hModule = LoadLibrary(loadPath);
+                if (hModule == IntPtr.Zero)
+                {
+                    int err = Marshal.GetLastWin32Error();
+                    System.Diagnostics.Debug.WriteLine($"BidDocMagic: LoadLibrary({loadPath}) failed, error={err}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"BidDocMagic: LoadLibrary({loadPath}) succeeded");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"BidDocMagic: LoadLibrary exception: {ex.Message}");
+            }
+        }
+
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr LoadLibrary(string lpFileName);
