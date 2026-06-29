@@ -21,7 +21,7 @@ The project provides two usage modes:
 - **Batch directory conversion**: Convert all Word/PDF files in a folder at once
 - PDFium rendering engine (fast, built-in)
 - Multi-threaded PDF composition for faster conversion
-- Configurable DPI (150-1200, default 300)
+- Configurable DPI (50-1200, default 300)
 - Support direct PDF input (skip Word-to-PDF step)
 - Automatic native DLL discovery and preloading
 - Clean temporary file management
@@ -112,7 +112,7 @@ When `-i` points to a directory, the tool automatically scans all `.docx`/`.doc`
 |--------|-------|---------|-------------|
 | `--input` | `-i` | (required) | Input file or directory path |
 | `--output` | `-o` | `<input>_DualPDF.pdf` | Output: file path for single, directory for batch |
-| `--dpi` | `-d` | `300` | Render DPI (150-1200) |
+| `--dpi` | `-d` | `300` | Render DPI (50-1200) |
 | `--threads` | `-t` | CPU core count | Max parallel threads per file |
 | `--pdf-input` | | `false` | Treat input as PDF (skip Word-to-PDF step) |
 | `--open` | | `false` | Open output PDF after conversion (single file only) |
@@ -182,7 +182,7 @@ See [LICENSE](LICENSE) (Chinese) / [LICENSE.en](LICENSE.en) (English) for detail
 - **目录批量转换**：一次性转换文件夹内所有 Word/PDF 文件
 - PDFium 渲染引擎（内置，快速渲染）
 - 多线程PDF合成，加速转换过程
-- 可配置 DPI（150-1200，默认 300）
+- 可配置 DPI（50-1200，默认 300）
 - 支持直接输入 PDF（跳过 Word 转 PDF 步骤）
 - 自动发现和预加载原生 DLL
 - 自动清理临时文件
@@ -273,7 +273,7 @@ DualLayerPdfConverter.exe -i "C:\docs\" -o "C:\output\"
 |------|------|--------|------|
 | `--input` | `-i` | （必填） | 输入文件或目录路径 |
 | `--output` | `-o` | `<输入>_DualPDF.pdf` | 输出：单文件时为路径，批量时为目录 |
-| `--dpi` | `-d` | `300` | 渲染 DPI（150-1200） |
+| `--dpi` | `-d` | `300` | 渲染 DPI（50-1200） |
 | `--threads` | `-t` | CPU核心数 | 每个文件的最大并行线程数 |
 | `--pdf-input` | | `false` | 将输入视为PDF（跳过Word转PDF步骤） |
 | `--open` | | `false` | 转换完成后打开PDF（仅单文件） |

@@ -45,8 +45,8 @@ namespace BidDocMagic
             int dy = 22;
 
             var lblDpi = new Label { Text = "渲染DPI：", Location = new Point(20, dy + 3), AutoSize = true };
-            numDpi = new NumericUpDown { Location = new Point(110, dy), Size = new Size(70, 25), Minimum = 150, Maximum = 1200, Value = 300, Increment = 50 };
-            var lblDpiTip = new Label { Text = "推荐：300（快速）/ 600（标准）/ 1200（高清）", Location = new Point(195, dy + 3), AutoSize = true, ForeColor = Color.Gray };
+            numDpi = new NumericUpDown { Location = new Point(110, dy), Size = new Size(70, 25), Minimum = 50, Maximum = 1200, Value = 300, Increment = 50 };
+            var lblDpiTip = new Label { Text = "推荐：300（快速）/ 600（标准）/ 1200（高清）\n支持 50~1200 DPI", Location = new Point(195, dy + 3), AutoSize = true, ForeColor = Color.Gray };
 
             grpDpi.Controls.AddRange(new Control[] { lblDpi, numDpi, lblDpiTip });
             scrollPanel.Controls.Add(grpDpi);

@@ -63,7 +63,7 @@ DualLayerPdfConverter.exe -i "C:\path\to\docs\" -o "C:\output\"
 |--------|-------|---------|-------------|
 | `--input` | `-i` | (required) | Input file or directory path |
 | `--output` | `-o` | `<input>_DualPDF.pdf` | Output: file path for single, directory for batch. If the target file already exists, auto-renames with `(01)`, `(02)`, etc. suffix |
-| `--dpi` | `-d` | `300` | Render DPI (150-1200) |
+| `--dpi` | `-d` | `300` | Render DPI (50-1200) |
 | `--threads` | `-t` | CPU core count | Max parallel threads for PDF composition only (rendering is serial) |
 | `--pdf-input` | | `false` | Treat input as PDF (skip Word-to-PDF step) |
 | `--open` | | `false` | Open output PDF after conversion (single file only) |

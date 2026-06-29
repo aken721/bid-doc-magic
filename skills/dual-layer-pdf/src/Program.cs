@@ -138,7 +138,7 @@ namespace DualLayerPdfConverter
             Console.WriteLine("Options:");
             Console.WriteLine("  -i, --input      Input file or directory path (required)");
             Console.WriteLine("  -o, --output     Output path: file path for single, directory for batch");
-            Console.WriteLine("  -d, --dpi        Render DPI 150-1200 (default: 300)");
+            Console.WriteLine("  -d, --dpi        Render DPI 50-1200 (default: 300)");
             Console.WriteLine("  -t, --threads    Max parallel threads per file (default: CPU core count)");
             Console.WriteLine("      --pdf-input  Treat input as PDF (skip Word-to-PDF step)");
             Console.WriteLine("      --open       Open output PDF after conversion (single file only)");
@@ -199,9 +199,9 @@ namespace DualLayerPdfConverter
                 return null;
             }
 
-            if (opts.Dpi < 150 || opts.Dpi > 1200)
+            if (opts.Dpi < 50 || opts.Dpi > 1200)
             {
-                Console.Error.WriteLine("ERROR:--dpi must be between 150 and 1200");
+                Console.Error.WriteLine("ERROR:--dpi must be between 50 and 1200");
                 return null;
             }
 
