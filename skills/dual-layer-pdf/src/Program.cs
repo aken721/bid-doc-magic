@@ -56,7 +56,7 @@ namespace DualLayerPdfConverter
         {
             var extensions = options.PdfInput
                 ? new[] { ".pdf" }
-                : new[] { ".docx", ".doc" };
+                : new[] { ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx" };
 
             var files = extensions
                 .SelectMany(ext => Directory.GetFiles(options.InputPath, $"*{ext}", SearchOption.TopDirectoryOnly))
@@ -126,13 +126,15 @@ namespace DualLayerPdfConverter
 
         static void PrintUsage()
         {
-            Console.WriteLine("DualLayerPdfConverter - Convert DOCX/PDF to dual-layer PDF");
+            Console.WriteLine("DualLayerPdfConverter - Convert Office documents/PDF to dual-layer PDF");
             Console.WriteLine();
             Console.WriteLine("Usage:");
             Console.WriteLine("  Single file:  DualLayerPdfConverter -i <file> [options]");
             Console.WriteLine("  Batch dir:    DualLayerPdfConverter -i <folder> [options]");
             Console.WriteLine();
-            Console.WriteLine("When -i points to a directory, all .docx/.doc files in it will be");
+            Console.WriteLine("Supported formats: .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf");
+            Console.WriteLine();
+            Console.WriteLine("When -i points to a directory, all supported Office files in it will be");
             Console.WriteLine("converted. Use --pdf-input to batch convert .pdf files instead.");
             Console.WriteLine();
             Console.WriteLine("Options:");
@@ -140,7 +142,7 @@ namespace DualLayerPdfConverter
             Console.WriteLine("  -o, --output     Output path: file path for single, directory for batch");
             Console.WriteLine("  -d, --dpi        Render DPI 50-1200 (default: 300)");
             Console.WriteLine("  -t, --threads    Max parallel threads per file (default: CPU core count)");
-            Console.WriteLine("      --pdf-input  Treat input as PDF (skip Word-to-PDF step)");
+            Console.WriteLine("      --pdf-input  Treat input as PDF (skip Office-to-PDF step)");
             Console.WriteLine("      --open       Open output PDF after conversion (single file only)");
             Console.WriteLine("  -h, --help       Show this help message");
         }
@@ -196,6 +198,12 @@ namespace DualLayerPdfConverter
             if (!File.Exists(opts.InputPath) && !Directory.Exists(opts.InputPath))
             {
                 Console.Error.WriteLine($"ERROR:Input not found: {opts.InputPath}");
+                return null;
+            }
+
+            if (File.Exists(opts.InputPath) && !opts.PdfInput && !DualLayerPdfEngine.IsSupportedFile(opts.InputPath))
+            {
+                Console.Error.WriteLine($"ERROR:Unsupported file format: {Path.GetExtension(opts.InputPath)}. Supported: .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf");
                 return null;
             }
 

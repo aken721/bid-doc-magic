@@ -1,20 +1,29 @@
 ---
 name: "dual-layer-pdf"
-description: "Convert DOCX to dual-layer PDF (image overlay + text layer) via a standalone CLI tool. Any agent can install and use it with a single command. Triggers: 双层PDF, bid-pdf, dual-layer PDF, 不可编辑PDF, convert docx to pdf"
+description: "Convert Office documents (Word/Excel/PowerPoint) to dual-layer PDF (image overlay + text layer) via a standalone CLI tool. Any agent can install and use it with a single command. Triggers: 双层PDF, bid-pdf, dual-layer PDF, 不可编辑PDF, convert docx/xlsx/pptx to pdf"
 ---
 
 # BidDocMagic - Dual-Layer PDF Converter (Universal Skill)
 
-A **universal skill** that converts Word documents (.docx) to dual-layer PDFs. The image layer sits on top (OverContent), the text layer underneath — making the PDF appear as a pure image while preserving text searchability.
+A **universal skill** that converts Office documents (.doc, .docx, .xls, .xlsx, .ppt, .pptx) to dual-layer PDFs. The image layer sits on top (OverContent), the text layer underneath — making the PDF appear as a pure image while preserving text searchability.
 
 Any agent (work agent, code agent, etc.) can install this skill and convert documents with a single command.
 
 ## When to Use
 
-- User wants to convert DOCX to non-editable, printable dual-layer PDFs
+- User wants to convert Word/Excel/PowerPoint documents to non-editable, printable dual-layer PDFs
 - User asks for "双层PDF", "bid-pdf", "dual-layer PDF", or "不可编辑PDF"
 - User needs PDFs that are printable but not editable
 - User wants to protect document content from modification while preserving text searchability
+
+## Supported Formats
+
+| Application | Formats | Conversion Method |
+|-------------|---------|-------------------|
+| Word | .doc, .docx | `Word.Document.SaveAs2(wdFormatPDF)` |
+| Excel | .xls, .xlsx | `Workbook.ExportAsFixedFormat(xlTypePDF)` |
+| PowerPoint | .ppt, .pptx | `Presentation.SaveAs(ppSaveAsPDF)` |
+| PDF | .pdf | Direct input (skip Office conversion with `--pdf-input`) |
 
 ## Quick Start
 
@@ -38,8 +47,14 @@ This produces `DualLayerPdfConverter.exe` in `src/bin/Release/`.
 ### Convert (Single Command)
 
 ```bash
-# Convert a single DOCX file
+# Convert a Word document
 DualLayerPdfConverter.exe -i "C:\path\to\document.docx"
+
+# Convert an Excel workbook
+DualLayerPdfConverter.exe -i "C:\path\to\spreadsheet.xlsx"
+
+# Convert a PowerPoint presentation
+DualLayerPdfConverter.exe -i "C:\path\to\presentation.pptx"
 
 # Convert with options
 DualLayerPdfConverter.exe -i "C:\path\to\document.docx" -o "C:\output\result.pdf" -d 300 -t 4
@@ -47,7 +62,7 @@ DualLayerPdfConverter.exe -i "C:\path\to\document.docx" -o "C:\output\result.pdf
 # Convert an existing PDF to dual-layer
 DualLayerPdfConverter.exe -i "C:\path\to\existing.pdf" --pdf-input
 
-# Batch convert all DOCX files in a folder
+# Batch convert all supported Office files in a folder
 DualLayerPdfConverter.exe -i "C:\path\to\docs\"
 
 # Batch convert all PDF files in a folder
@@ -65,18 +80,19 @@ DualLayerPdfConverter.exe -i "C:\path\to\docs\" -o "C:\output\"
 | `--output` | `-o` | `<input>_DualPDF.pdf` | Output: file path for single, directory for batch. If the target file already exists, auto-renames with `(01)`, `(02)`, etc. suffix |
 | `--dpi` | `-d` | `300` | Render DPI (50-1200) |
 | `--threads` | `-t` | CPU core count | Max parallel threads for PDF composition only (rendering is serial) |
-| `--pdf-input` | | `false` | Treat input as PDF (skip Word-to-PDF step) |
+| `--pdf-input` | | `false` | Treat input as PDF (skip Office-to-PDF step) |
 | `--open` | | `false` | Open output PDF after conversion (single file only) |
 
 ## Architecture Overview
 
 ```
-Input (.docx)
+Input (.doc/.docx/.xls/.xlsx/.ppt/.pptx)
       │
       ▼
 ┌──────────────────┐
-│ Step 1: Generate  │  DOCX → PDF (text layer) via Microsoft.Office.Interop.Word
-│   Text Layer PDF  │  Skip if --pdf-input is set
+│ Step 1: Generate  │  Office document → PDF (text layer) via Office Interop
+│   Text Layer PDF  │  Word: SaveAs2 | Excel: ExportAsFixedFormat | PPT: SaveAs
+│                   │  Skip if --pdf-input is set
 └────────┬─────────┘
          │
          ▼
@@ -105,6 +121,15 @@ Input (.docx)
 | System.Buffers | 4.5.1 | Required by PDFiumSharp |
 | System.Runtime.CompilerServices.Unsafe | 4.5.3 | Required by PDFiumSharp |
 
+### COM Interop References
+
+| Reference | Purpose |
+|-----------|---------|
+| Microsoft.Office.Interop.Word | Word document → PDF conversion |
+| Microsoft.Office.Interop.Excel | Excel workbook → PDF conversion |
+| Microsoft.Office.Interop.PowerPoint | PowerPoint presentation → PDF conversion |
+| Microsoft.Office.Core | Office shared types (MsoTriState etc.) |
+
 ### Native DLLs
 
 | DLL | Purpose | Deployment |
@@ -115,19 +140,24 @@ Input (.docx)
 
 - Windows x64
 - .NET Framework 4.8
-- Microsoft Word (for DOCX → PDF conversion; not needed if `--pdf-input`)
+- Microsoft Word (for .doc/.docx → PDF conversion)
+- Microsoft Excel (for .xls/.xlsx → PDF conversion)
+- Microsoft PowerPoint (for .ppt/.pptx → PDF conversion)
+- Office applications not needed if using `--pdf-input`
 
 ## Key Design Decisions
 
 1. **Standalone CLI tool**: Decoupled from VSTO/Word AddIn. Runs as a console application that any agent can invoke.
 
-2. **Image on top, text underneath**: Uses `GetOverContent()` to place the rendered image above the text layer, making the PDF appear as a pure image while preserving text searchability underneath.
+2. **Multi-format support**: Automatically detects file type by extension and uses the appropriate Office Interop API for PDF export. The core dual-layer PDF composition logic (PDFiumSharp + iTextSharp) is format-agnostic.
 
-3. **PDFium rendering engine**: The only rendering engine. Built-in via NuGet, no external dependencies required. Fast and reliable rendering. There is no other engine option and no "default" concept — PDFium is the engine.
+3. **Image on top, text underneath**: Uses `GetOverContent()` to place the rendered image above the text layer, making the PDF appear as a pure image while preserving text searchability underneath.
 
-4. **Temporary directory**: All intermediate files stored in `%TEMP%\BidDocMagic` and cleaned up after conversion.
+4. **PDFium rendering engine**: The only rendering engine. Built-in via NuGet, no external dependencies required. Fast and reliable rendering. There is no other engine option and no "default" concept — PDFium is the engine.
 
-5. **Native DLL preloading**: Automatically discovers and loads native DLLs from known locations at startup.
+5. **Temporary directory**: All intermediate files stored in `%TEMP%\BidDocMagic` and cleaned up after conversion.
+
+6. **Native DLL preloading**: Automatically discovers and loads native DLLs from known locations at startup.
 
 ## Project Structure
 
@@ -138,14 +168,14 @@ skills/dual-layer-pdf/
     ├── DualLayerPdfConverter.csproj  # Project file
     ├── packages.config               # NuGet packages
     ├── Program.cs                    # CLI entry point
-    └── DualLayerPdfEngine.cs         # Core conversion engine
+    └── DualLayerPdfEngine.cs         # Core conversion engine (Word/Excel/PPT/PDF)
 ```
 
 ## Agent Integration Guide
 
 ### For Code Agent / Work Agent
 
-After installing this skill, the agent can convert DOCX to dual-layer PDF by running:
+After installing this skill, the agent can convert Office documents to dual-layer PDF by running:
 
 ```bash
 # Build (first time only)
@@ -153,8 +183,14 @@ cd {skill_dir}/src
 nuget restore packages.config -PackagesDirectory packages
 msbuild DualLayerPdfConverter.csproj /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
 
-# Convert
+# Convert Word
 {skill_dir}/src/bin/Release/DualLayerPdfConverter.exe -i "C:\docs\report.docx" -d 300
+
+# Convert Excel
+{skill_dir}/src/bin/Release/DualLayerPdfConverter.exe -i "C:\docs\spreadsheet.xlsx" -d 300
+
+# Convert PowerPoint
+{skill_dir}/src/bin/Release/DualLayerPdfConverter.exe -i "C:\docs\presentation.pptx" -d 300
 ```
 
 The output file defaults to `<input_filename>_DualPDF.pdf` in the same directory as the input. If the target file already exists, it is automatically renamed with a numbered suffix (e.g. `filename_DualPDF(01).pdf`, `filename_DualPDF(02).pdf`) — existing files are never overwritten.
@@ -163,6 +199,6 @@ The output file defaults to `<input_filename>_DualPDF.pdf` in the same directory
 
 - Exit code 0: Success
 - Exit code 1: Invalid arguments
-- Exit code 2: Conversion error (file not found, Word not available, DLL missing, etc.)
+- Exit code 2: Conversion error (file not found, Office not available, DLL missing, etc.)
 
 Error messages are printed to stderr.

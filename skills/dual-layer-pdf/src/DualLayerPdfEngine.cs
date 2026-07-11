@@ -14,6 +14,9 @@ using iTextSharp.text.pdf;
 using PDFiumSharp;
 using PDFiumSharp.Types;
 using Word = Microsoft.Office.Interop.Word;
+using Excel = Microsoft.Office.Interop.Excel;
+using PowerPoint = Microsoft.Office.Interop.PowerPoint;
+using MsoTriState = Microsoft.Office.Core.MsoTriState;
 
 namespace DualLayerPdfConverter
 {
@@ -25,6 +28,26 @@ namespace DualLayerPdfConverter
         public int MaxDegreeOfParallelism { get; set; } = 0;
 
         private static readonly string TempDir = Path.Combine(Path.GetTempPath(), "BidDocMagic");
+
+        private static readonly HashSet<string> WordExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".doc", ".docx" };
+        private static readonly HashSet<string> ExcelExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".xls", ".xlsx" };
+        private static readonly HashSet<string> PptExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".ppt", ".pptx" };
+
+        public static bool IsSupportedFile(string path)
+        {
+            string ext = Path.GetExtension(path);
+            return WordExtensions.Contains(ext) || ExcelExtensions.Contains(ext) || PptExtensions.Contains(ext) || string.Equals(ext, ".pdf", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static string GetFileTypeDescription(string path)
+        {
+            string ext = Path.GetExtension(path).ToLowerInvariant();
+            if (WordExtensions.Contains(ext)) return "Word";
+            if (ExcelExtensions.Contains(ext)) return "Excel";
+            if (PptExtensions.Contains(ext)) return "PowerPoint";
+            if (ext == ".pdf") return "PDF";
+            return "Unknown";
+        }
 
         public string Convert(string inputPath, string outputPath = null)
         {
@@ -47,9 +70,11 @@ namespace DualLayerPdfConverter
                 }
                 else
                 {
-                    Console.WriteLine("[1/3] Converting DOCX to PDF text layer...");
+                    string ext = Path.GetExtension(inputPath);
+                    string appType = GetFileTypeDescription(inputPath);
+                    Console.WriteLine($"[1/3] Converting {appType} document to PDF text layer...");
                     textPdfPath = Path.Combine(sessionDir, "text_layer.pdf");
-                    ConvertWordToPDF(inputPath, textPdfPath);
+                    ConvertOfficeToPDF(inputPath, textPdfPath);
                 }
 
                 string imagePattern = Path.Combine(sessionDir, "page-{0}.png");
@@ -107,6 +132,19 @@ namespace DualLayerPdfConverter
             }
         }
 
+        private void ConvertOfficeToPDF(string inputPath, string pdfPath)
+        {
+            string ext = Path.GetExtension(inputPath);
+            if (WordExtensions.Contains(ext))
+                ConvertWordToPDF(inputPath, pdfPath);
+            else if (ExcelExtensions.Contains(ext))
+                ConvertExcelToPDF(inputPath, pdfPath);
+            else if (PptExtensions.Contains(ext))
+                ConvertPowerPointToPDF(inputPath, pdfPath);
+            else
+                throw new NotSupportedException($"Unsupported file format: {ext}");
+        }
+
         private void ConvertWordToPDF(string docxPath, string pdfPath)
         {
             Word.Application wordApp = null;
@@ -144,6 +182,91 @@ namespace DualLayerPdfConverter
                     {
                         wordApp.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
                         Marshal.ReleaseComObject(wordApp);
+                    }
+                }
+                catch { }
+            }
+        }
+
+        private void ConvertExcelToPDF(string xlsPath, string pdfPath)
+        {
+            Excel.Application excelApp = null;
+            Excel.Workbook wb = null;
+
+            try
+            {
+                excelApp = new Excel.Application();
+                excelApp.Visible = false;
+                excelApp.DisplayAlerts = false;
+
+                wb = excelApp.Workbooks.Open(xlsPath, ReadOnly: true);
+                wb.ExportAsFixedFormat(
+                    Type: Excel.XlFixedFormatType.xlTypePDF,
+                    Filename: Path.GetFullPath(pdfPath),
+                    Quality: Excel.XlFixedFormatQuality.xlQualityStandard,
+                    IncludeDocProperties: true,
+                    IgnorePrintAreas: false,
+                    OpenAfterPublish: false
+                );
+            }
+            finally
+            {
+                try
+                {
+                    if (wb != null)
+                    {
+                        wb.Close(false);
+                        Marshal.ReleaseComObject(wb);
+                    }
+                }
+                catch { }
+
+                try
+                {
+                    if (excelApp != null)
+                    {
+                        excelApp.Quit();
+                        Marshal.ReleaseComObject(excelApp);
+                    }
+                }
+                catch { }
+            }
+        }
+
+        private void ConvertPowerPointToPDF(string pptPath, string pdfPath)
+        {
+            PowerPoint.Application pptApp = null;
+            PowerPoint.Presentation pres = null;
+
+            try
+            {
+                pptApp = new PowerPoint.Application();
+
+                pres = pptApp.Presentations.Open(pptPath, MsoTriState.msoTrue, MsoTriState.msoFalse, MsoTriState.msoFalse);
+                pres.SaveAs(
+                    Path.GetFullPath(pdfPath),
+                    PowerPoint.PpSaveAsFileType.ppSaveAsPDF,
+                    MsoTriState.msoTrue
+                );
+            }
+            finally
+            {
+                try
+                {
+                    if (pres != null)
+                    {
+                        pres.Close();
+                        Marshal.ReleaseComObject(pres);
+                    }
+                }
+                catch { }
+
+                try
+                {
+                    if (pptApp != null)
+                    {
+                        pptApp.Quit();
+                        Marshal.ReleaseComObject(pptApp);
                     }
                 }
                 catch { }
