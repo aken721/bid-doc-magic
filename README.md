@@ -68,7 +68,7 @@ Input (.docx/.pdf)
 Instruct your AI Agent (e.g. CodeArts, Cursor, etc.) with a single sentence:
 
 ```
-Please install the dual-layer-pdf skill from https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip
+Please install the dual-layer-pdf skill: https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip
 ```
 
 The Agent will automatically download, extract, and configure the skill for use.
@@ -239,7 +239,7 @@ See [LICENSE](LICENSE) (Chinese) / [LICENSE.en](LICENSE.en) (English) for detail
 向你的 AI Agent（如 CodeArts、Cursor 等）发送一句话即可：
 
 ```
-请从 https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip 帮我安装双层PDF技能
+请帮我安装 dual-layer-pdf skill：https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip
 ```
 
 Agent 将自动完成下载、解压和配置，即可使用。
