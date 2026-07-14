@@ -63,13 +63,26 @@ Input (.docx/.pdf)
 
 #### Install
 
-**Option A: Install from pre-built package (Recommended)**
+**Option A: Install via AI Agent (Recommended)**
+
+Instruct your AI Agent (e.g. CodeArts, Cursor, etc.) with the following prompt:
+
+```
+Please download and install the dual-layer-pdf skill:
+1. Download https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip
+2. Extract to the skill installation directory (e.g. C:\Tools\dual-layer-pdf\)
+3. Verify the executable exists at bin/DualLayerPdfConverter.exe
+```
+
+The Agent will automatically download, extract, and configure the skill for use.
+
+**Option B: Install from pre-built package manually**
 
 1. Download `dual-layer-pdf.zip` from the `skills/` directory
 2. Extract to any location, e.g. `C:\Tools\dual-layer-pdf\`
 3. The executable is at `bin/DualLayerPdfConverter.exe`
 
-**Option B: Build from source**
+**Option C: Build from source**
 
 ```powershell
 cd skills/dual-layer-pdf/src
@@ -224,13 +237,26 @@ See [LICENSE](LICENSE) (Chinese) / [LICENSE.en](LICENSE.en) (English) for detail
 
 #### 安装方式
 
-**方式一：安装预构建包（推荐）**
+**方式一：通过AI Agent安装（推荐）**
+
+向你的 AI Agent（如 CodeArts、Cursor 等）发送以下指令：
+
+```
+请下载并安装 dual-layer-pdf 技能：
+1. 下载 https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip
+2. 解压到技能安装目录（如 C:\Tools\dual-layer-pdf\）
+3. 验证可执行文件存在于 bin/DualLayerPdfConverter.exe
+```
+
+Agent 将自动完成下载、解压和配置，即可使用。
+
+**方式二：手动安装预构建包**
 
 1. 从 `skills/` 目录下载 `dual-layer-pdf.zip`
 2. 解压到任意位置，如 `C:\Tools\dual-layer-pdf\`
 3. 可执行文件位于 `bin/DualLayerPdfConverter.exe`
 
-**方式二：从源码构建**
+**方式三：从源码构建**
 
 ```powershell
 cd skills/dual-layer-pdf/src
