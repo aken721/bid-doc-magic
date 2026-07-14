@@ -65,13 +65,10 @@ Input (.docx/.pdf)
 
 **Option A: Install via AI Agent (Recommended)**
 
-Instruct your AI Agent (e.g. CodeArts, Cursor, etc.) with the following prompt:
+Instruct your AI Agent (e.g. CodeArts, Cursor, etc.) with a single sentence:
 
 ```
-Please download and install the dual-layer-pdf skill:
-1. Download https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip
-2. Extract to the skill installation directory (e.g. C:\Tools\dual-layer-pdf\)
-3. Verify the executable exists at bin/DualLayerPdfConverter.exe
+Please install the dual-layer-pdf skill from https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip
 ```
 
 The Agent will automatically download, extract, and configure the skill for use.
@@ -239,13 +236,10 @@ See [LICENSE](LICENSE) (Chinese) / [LICENSE.en](LICENSE.en) (English) for detail
 
 **方式一：通过AI Agent安装（推荐）**
 
-向你的 AI Agent（如 CodeArts、Cursor 等）发送以下指令：
+向你的 AI Agent（如 CodeArts、Cursor 等）发送一句话即可：
 
 ```
-请下载并安装 dual-layer-pdf 技能：
-1. 下载 https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip
-2. 解压到技能安装目录（如 C:\Tools\dual-layer-pdf\）
-3. 验证可执行文件存在于 bin/DualLayerPdfConverter.exe
+请从 https://gitee.com/aken721/bid-doc-magic/raw/master/skills/dual-layer-pdf.zip 帮我安装双层PDF技能
 ```
 
 Agent 将自动完成下载、解压和配置，即可使用。
