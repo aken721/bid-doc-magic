@@ -44,6 +44,7 @@ namespace DualLayerPdfConverter
                 Dpi = options.Dpi,
                 PdfInput = options.PdfInput,
                 OpenAfter = options.OpenAfter,
+                ImageOnly = options.ImageOnly,
                 MaxDegreeOfParallelism = options.Threads
             };
 
@@ -60,7 +61,7 @@ namespace DualLayerPdfConverter
 
             var files = extensions
                 .SelectMany(ext => Directory.GetFiles(options.InputPath, $"*{ext}", SearchOption.TopDirectoryOnly))
-                .Where(f => !Path.GetFileNameWithoutExtension(f).EndsWith("_DualPDF"))
+                .Where(f => !Path.GetFileNameWithoutExtension(f).EndsWith("_DualPDF") && !Path.GetFileNameWithoutExtension(f).EndsWith("_ImgPDF"))
                 .ToArray();
 
             if (files.Length == 0)
@@ -94,12 +95,14 @@ namespace DualLayerPdfConverter
                         Dpi = options.Dpi,
                         PdfInput = options.PdfInput,
                         OpenAfter = false,
+                        ImageOnly = options.ImageOnly,
                         MaxDegreeOfParallelism = engineDop
                     };
 
+                    string suffix = options.ImageOnly ? "_ImgPDF.pdf" : "_DualPDF.pdf";
                     string outputPath = engine.Convert(filePath, Path.Combine(
                         outputDir,
-                        Path.GetFileNameWithoutExtension(filePath) + "_DualPDF.pdf"));
+                        Path.GetFileNameWithoutExtension(filePath) + suffix));
 
                     lock (lockObj)
                     {
@@ -143,6 +146,7 @@ namespace DualLayerPdfConverter
             Console.WriteLine("  -d, --dpi        Render DPI 50-1200 (default: 300)");
             Console.WriteLine("  -t, --threads    Max parallel threads per file (default: CPU core count)");
             Console.WriteLine("      --pdf-input  Treat input as PDF (skip Office-to-PDF step)");
+            Console.WriteLine("      --image-only Output image-only PDF (no text layer, not searchable)");
             Console.WriteLine("      --open       Open output PDF after conversion (single file only)");
             Console.WriteLine("  -h, --help       Show this help message");
         }
@@ -179,6 +183,9 @@ namespace DualLayerPdfConverter
                         break;
                     case "--pdf-input":
                         opts.PdfInput = true;
+                        break;
+                    case "--image-only":
+                        opts.ImageOnly = true;
                         break;
                     case "--open":
                         opts.OpenAfter = true;
@@ -285,6 +292,7 @@ namespace DualLayerPdfConverter
             public int Threads = 0;
             public bool PdfInput = false;
             public bool OpenAfter = false;
+            public bool ImageOnly = false;
         }
     }
 }

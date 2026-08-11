@@ -25,6 +25,7 @@ namespace DualLayerPdfConverter
         public int Dpi { get; set; } = 300;
         public bool PdfInput { get; set; } = false;
         public bool OpenAfter { get; set; } = false;
+        public bool ImageOnly { get; set; } = false;
         public int MaxDegreeOfParallelism { get; set; } = 0;
 
         private static readonly string TempDir = Path.Combine(Path.GetTempPath(), "BidDocMagic");
@@ -99,8 +100,16 @@ namespace DualLayerPdfConverter
                     ? Path.Combine(sessionDir, "output_DualPDF.pdf")
                     : outputPath;
 
-                Console.WriteLine($"[3/3] Composing dual-layer PDF (parallel={Math.Min(dop, 4)})...");
-                CreatePdfWithImageOverlay(textPdfPath, imagePattern, tempOutputPath, false, sessionDir);
+                if (ImageOnly)
+                {
+                    Console.WriteLine($"[3/3] Composing image-only PDF...");
+                    CreateImageOnlyPdf(textPdfPath, imagePattern, tempOutputPath);
+                }
+                else
+                {
+                    Console.WriteLine($"[3/3] Composing dual-layer PDF (parallel={Math.Min(dop, 4)})...");
+                    CreatePdfWithImageOverlay(textPdfPath, imagePattern, tempOutputPath, false, sessionDir);
+                }
 
                 if (needMove && File.Exists(tempOutputPath))
                 {
@@ -304,6 +313,57 @@ namespace DualLayerPdfConverter
             }
         }
 
+        private void CreateImageOnlyPdf(string textPdfPath, string imagePattern, string outputPath)
+        {
+            int totalPages;
+            var pageSizes = new Dictionary<int, iTextSharp.text.Rectangle>();
+
+            var mainReader = new PdfReader(textPdfPath);
+            try
+            {
+                totalPages = mainReader.NumberOfPages;
+                for (int i = 1; i <= totalPages; i++)
+                    pageSizes[i] = mainReader.GetPageSize(i);
+            }
+            finally
+            {
+                mainReader.Close();
+            }
+
+            Console.WriteLine($"  Composing image-only PDF with {totalPages} pages...");
+
+            var document = new iTextSharp.text.Document();
+            var writer = PdfWriter.GetInstance(document, new FileStream(outputPath, FileMode.Create));
+            document.Open();
+
+            try
+            {
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    string imagePath = string.Format(imagePattern, i);
+                    if (!File.Exists(imagePath))
+                        throw new FileNotFoundException($"Page {i} image not found: {imagePath}");
+
+                    var pageSize = pageSizes[i];
+                    document.SetPageSize(pageSize);
+                    document.NewPage();
+
+                    iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(imagePath);
+                    image.SetAbsolutePosition(0, 0);
+                    image.ScaleAbsolute(pageSize.Width, pageSize.Height);
+
+                    writer.DirectContent.AddImage(image);
+
+                    if (i % 5 == 0 || i == totalPages)
+                        Console.WriteLine($"  Composing page {i}/{totalPages}...");
+                }
+            }
+            finally
+            {
+                document.Close();
+            }
+        }
+
         private void CreatePdfWithImageOverlay(string textPdfPath, string imagePattern,
             string outputPath, bool isBackGround, string sessionDir)
         {
@@ -446,13 +506,15 @@ namespace DualLayerPdfConverter
 
         private string ResolveOutputPath(string directory, string baseName)
         {
-            string candidate = Path.Combine(directory, baseName + "_DualPDF.pdf");
+            string suffix = ImageOnly ? "_ImgPDF.pdf" : "_DualPDF.pdf";
+            string candidate = Path.Combine(directory, baseName + suffix);
             if (!File.Exists(candidate))
                 return candidate;
 
+            string suffixBase = ImageOnly ? "_ImgPDF" : "_DualPDF";
             for (int i = 1; i < 100; i++)
             {
-                candidate = Path.Combine(directory, $"{baseName}_DualPDF({i:D2}).pdf");
+                candidate = Path.Combine(directory, $"{baseName}{suffixBase}({i:D2}).pdf");
                 if (!File.Exists(candidate))
                     return candidate;
             }
@@ -460,7 +522,7 @@ namespace DualLayerPdfConverter
             int seq = 100;
             while (true)
             {
-                candidate = Path.Combine(directory, $"{baseName}_DualPDF({seq}).pdf");
+                candidate = Path.Combine(directory, $"{baseName}{suffixBase}({seq}).pdf");
                 if (!File.Exists(candidate))
                     return candidate;
                 seq++;
