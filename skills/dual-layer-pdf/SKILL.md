@@ -58,7 +58,7 @@ license: "MIT"
 | pdfium_x64.dll | `4be3d3ad88a55a1e6545cf4c131d771eaf3fd3540142ff42955ebad7e68d989e` |
 | pdfium_x86.dll | `0bd09148566cf558ef994ca0b3c1736769fd60bbbb2bf3bfc4ac47fcdd05fb23` |
 
-源码 commit：`a33ab63df6f7d2862c461a2a9b9d4b1c1a186e5a`（已锁定，不可变）
+源码 commit：`788989702ad31fdae1eae68ad4f1bf8650378195`（已锁定，不可变）
 
 ```powershell
 # 在技能目录下运行（即 SKILL.md 所在目录）
@@ -67,7 +67,7 @@ $dest = ".\bin"
 if (Test-Path "$dest\DualLayerPdfConverter.exe") {
   Write-Host "Binaries already installed at $dest\DualLayerPdfConverter.exe — skipping download."
 } else {
-  $commit = "a33ab63df6f7d2862c461a2a9b9d4b1c1a186e5a"
+  $commit = "788989702ad31fdae1eae68ad4f1bf8650378195"
   $base = "https://gitee.com/aken721/bid-doc-magic/raw/$commit/skills/dual-layer-pdf/src/bin/Release"
   New-Item -ItemType Directory -Force -Path $dest | Out-Null
   $files = @{
@@ -240,11 +240,11 @@ msbuild DualLayerPdfConverter.csproj /p:Configuration=Release /p:Platform=x64 /v
 
 预编译二进制托管在公开的 Gitee 仓库（`aken721/bid-doc-magic`）。为应对供应链风险，采取以下措施：
 
-1. **锁定 commit**：下载链接引用固定的 git commit hash（`a33ab63...`），而非可变分支。该 commit 的内容不可变——仓库后续修改不会影响已发布的技能版本。
+1. **锁定 commit**：下载链接引用固定的 git commit hash（`7889897...`），而非可变分支。该 commit 的内容不可变——仓库后续修改不会影响已发布的技能版本。
 
 2. **SHA-256 校验**：每个下载文件都会计算哈希值，并与本 SKILL.md 中记录的预期值比对。上方的哈希表是发布到 SkillHub 的技能元数据的一部分，会在技能审核期间被检查。任何不匹配都会中止安装并删除该文件。
 
-3. **可审计性**：锁定 commit 对应的完整源码可在 `https://gitee.com/aken721/bid-doc-magic/tree/a33ab63df6f7d2862c461a2a9b9d4b1c1a186e5a/skills/dual-layer-pdf/src` 查阅，供独立审查。
+3. **可审计性**：锁定 commit 对应的完整源码可在 `https://gitee.com/aken721/bid-doc-magic/tree/788989702ad31fdae1eae68ad4f1bf8650378195/skills/dual-layer-pdf/src` 查阅，供独立审查。
 
 4. **信任假设**：Gitee 是第三方代码托管服务。需要更强保障的用户应审查锁定 commit 的源码并从源码构建（见上方备选方案）。
 
@@ -278,13 +278,13 @@ skills/dual-layer-pdf/
 
 ### 适用于 Code Agent / Work Agent
 
-**步骤 1 — 首次安装：** 从 Gitee 下载预编译二进制（无需构建工具）。锁定到 commit `a33ab63`，SHA-256 校验。若 `bin/DualLayerPdfConverter.exe` 已存在则跳过：
+**步骤 1 — 首次安装：** 从 Gitee 下载预编译二进制（无需构建工具）。锁定到 commit `7889897`，SHA-256 校验。若 `bin/DualLayerPdfConverter.exe` 已存在则跳过：
 
 ```powershell
 # 在技能目录下运行（即 SKILL.md 所在目录）。幂等 + 完整性校验。
 $dest = ".\bin"
 if (-not (Test-Path "$dest\DualLayerPdfConverter.exe")) {
-  $base = "https://gitee.com/aken721/bid-doc-magic/raw/a33ab63df6f7d2862c461a2a9b9d4b1c1a186e5a/skills/dual-layer-pdf/src/bin/Release"
+  $base = "https://gitee.com/aken721/bid-doc-magic/raw/788989702ad31fdae1eae68ad4f1bf8650378195/skills/dual-layer-pdf/src/bin/Release"
   New-Item -ItemType Directory -Force -Path $dest | Out-Null
   $files = @{
     "DualLayerPdfConverter.exe"="c9cc1b91227fa0190d637b821a51e9e6ab81eba5908794fbc4168ebe82d1fcdc"; "DualLayerPdfConverter.exe.config"="e7d2bd330d4602e7bbec3def01864e028bd41aa7270cd8f4147763559cf39073"; "iTextSharp.dll"="0bdfc493f2975d8098615b8826f01494b14d2e2605b82d0a5580f93f19840693"; "PDFiumSharp.dll"="2f9238237a2f150a3c6b0c7ee7281785aaca85efbbcfb5083faba5901b26d2e6"; "PDFiumSharp.NativeBinaries.dll"="1e07b21d1c9ac7ab299b933a6b085180d1620b1eb4c6685f826bc6c31b105abf"; "System.Buffers.dll"="c65fff603b283dc966d1a8b730c11d5e5e750e8021bd24640612f6cc3f2c6fb7"; "System.Memory.dll"="bf3fb84664f4097f1a8a9bc71a51dcf8cf1a905d4080a4d290da1730866e856f"; "System.Numerics.Vectors.dll"="1d3ef8698281e7cf7371d1554afef5872b39f96c26da772210a33da041ba1183"; "System.Runtime.CompilerServices.Unsafe.dll"="bfc8f02a96934786ca5a0514a3b657021c12542e215e94b78fdcc74bfeffe3d3"; "pdfium.dll"="4be3d3ad88a55a1e6545cf4c131d771eaf3fd3540142ff42955ebad7e68d989e"; "pdfium_x64.dll"="4be3d3ad88a55a1e6545cf4c131d771eaf3fd3540142ff42955ebad7e68d989e"; "pdfium_x86.dll"="0bd09148566cf558ef994ca0b3c1736769fd60bbbb2bf3bfc4ac47fcdd05fb23"
