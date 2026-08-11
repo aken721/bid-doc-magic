@@ -383,15 +383,15 @@ namespace BidDocMagic
             }
         }
 
-        private string ResolveOutputPath(string directory, string baseName)
+        private string ResolveOutputPath(string directory, string baseName, string suffix = "_DualPDF")
         {
-            string candidate = Path.Combine(directory, baseName + "_DualPDF.pdf");
+            string candidate = Path.Combine(directory, baseName + suffix + ".pdf");
             if (!File.Exists(candidate))
                 return candidate;
 
             for (int i = 1; i < 100; i++)
             {
-                candidate = Path.Combine(directory, $"{baseName}_DualPDF({i:D2}).pdf");
+                candidate = Path.Combine(directory, $"{baseName}{suffix}({i:D2}).pdf");
                 if (!File.Exists(candidate))
                     return candidate;
             }
@@ -399,10 +399,198 @@ namespace BidDocMagic
             int seq = 100;
             while (true)
             {
-                candidate = Path.Combine(directory, $"{baseName}_DualPDF({seq}).pdf");
+                candidate = Path.Combine(directory, $"{baseName}{suffix}({seq}).pdf");
                 if (!File.Exists(candidate))
                     return candidate;
                 seq++;
+            }
+        }
+
+        #endregion
+
+        #region 纯图片PDF功能
+
+        private void btnToImgPdf_Click(object sender, RibbonControlEventArgs e)
+        {
+            btnToImgPdf.Enabled = false;
+            _cts = new System.Threading.CancellationTokenSource();
+
+            _progressForm = new ProgressForm();
+            _progressForm.CancellationTokenSource = _cts;
+            _progressForm.FormClosed += (s, ea) =>
+            {
+                btnToImgPdf.Enabled = true;
+                _progressForm = null;
+            };
+
+            string docPath = ThisAddIn.app.ActiveDocument.FullName;
+            string docName = ThisAddIn.app.ActiveDocument.Name;
+
+            var thread = new System.Threading.Thread(() =>
+            {
+                string outputPath = null;
+                bool success = false;
+                string errorMsg = null;
+
+                try
+                {
+                    string sessionDir = Path.Combine(TempDir, Guid.NewGuid().ToString("N"));
+                    Directory.CreateDirectory(sessionDir);
+
+                    try
+                    {
+                        if (_cts.Token.IsCancellationRequested) return;
+
+                        UpdateProgress("步骤1/3：正在导出PDF文本层...");
+
+                        string textPdfPath = Path.Combine(sessionDir, "text_layer.pdf");
+                        ConvertWordToPDF(textPdfPath);
+
+                        if (_cts.Token.IsCancellationRequested) return;
+
+                        string imagePattern = Path.Combine(sessionDir, "page-{0}.png");
+
+                        UpdateProgress($"步骤2/3：正在使用PDFium渲染（{_pdfDpi}dpi）...");
+                        RenderPdfToImages(textPdfPath, imagePattern, _pdfDpi);
+
+                        if (_cts.Token.IsCancellationRequested) return;
+
+                        string outputDir = Path.GetDirectoryName(docPath);
+                        string baseName = Path.GetFileNameWithoutExtension(docName);
+                        outputPath = ResolveOutputPath(outputDir, baseName, "_ImgPDF");
+
+                        string tempOutputPath = outputPath;
+                        bool needMoveOutput = outputPath.Any(c => c > 127);
+                        if (needMoveOutput)
+                        {
+                            tempOutputPath = Path.Combine(sessionDir, "output_ImgPDF.pdf");
+                        }
+
+                        UpdateProgress("步骤3/3：正在合成纯图片PDF...");
+                        CreateImageOnlyPdf(textPdfPath, imagePattern, tempOutputPath);
+
+                        if (_cts.Token.IsCancellationRequested) return;
+
+                        if (needMoveOutput && File.Exists(tempOutputPath))
+                        {
+                            File.Copy(tempOutputPath, outputPath, true);
+                        }
+
+                        success = true;
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            if (Directory.Exists(sessionDir))
+                                Directory.Delete(sessionDir, true);
+                        }
+                        catch { }
+                    }
+                }
+                catch (OperationCanceledException) { }
+                catch (AggregateException aex)
+                {
+                    aex.Handle(ex =>
+                    {
+                        if (ex is OperationCanceledException) return true;
+                        errorMsg = ex.Message;
+                        return true;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    errorMsg = ex.Message;
+                }
+
+                if (success && outputPath != null)
+                {
+                    if (_pdfOpenAfter)
+                    {
+                        _progressForm?.CloseProgress();
+                        try { Process.Start(new ProcessStartInfo(outputPath) { UseShellExecute = true }); } catch { }
+                    }
+                    else
+                    {
+                        _progressForm?.ShowResult("转换成功！输出文件：" + outputPath, outputPath);
+                    }
+                }
+                else if (errorMsg != null)
+                {
+                    _progressForm?.ShowError("转换失败：" + errorMsg);
+                }
+                else
+                {
+                    _progressForm?.CloseProgress();
+                }
+            });
+            thread.IsBackground = true;
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+
+            _progressForm.Shown += (s, ea) =>
+            {
+                _progressForm.BeginInvoke(new Action(() => thread.Start()));
+            };
+
+            _progressForm.ShowDialog();
+        }
+
+        private void CreateImageOnlyPdf(string textPdfPath, string imagePattern, string outputPath)
+        {
+            var token = _cts?.Token ?? System.Threading.CancellationToken.None;
+
+            int totalPages;
+            var pageSizes = new Dictionary<int, iTextSharp.text.Rectangle>();
+
+            var mainReader = new PdfReader(textPdfPath);
+            try
+            {
+                totalPages = mainReader.NumberOfPages;
+                for (int i = 1; i <= totalPages; i++)
+                    pageSizes[i] = mainReader.GetPageSize(i);
+            }
+            finally
+            {
+                mainReader.Close();
+            }
+
+            UpdateProgress($"步骤3/3：正在合成纯图片PDF（共{totalPages}页）...");
+
+            var document = new iTextSharp.text.Document();
+            var writer = PdfWriter.GetInstance(document, new FileStream(outputPath, FileMode.Create));
+            document.Open();
+
+            try
+            {
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    string imagePath = string.Format(imagePattern, i);
+                    if (!File.Exists(imagePath))
+                        throw new FileNotFoundException($"页码 {i} 的图片未找到: {imagePath}");
+
+                    var pageSize = pageSizes[i];
+                    document.SetPageSize(pageSize);
+                    document.NewPage();
+
+                    iTextSharp.text.Image image;
+                    lock (_itextLock)
+                    {
+                        image = iTextSharp.text.Image.GetInstance(imagePath);
+                    }
+                    image.SetAbsolutePosition(0, 0);
+                    image.ScaleAbsolute(pageSize.Width, pageSize.Height);
+
+                    writer.DirectContent.AddImage(image);
+
+                    if (i % 5 == 0 || i == totalPages)
+                        UpdateProgress($"步骤3/3：正在合成第 {i}/{totalPages} 页...");
+                }
+            }
+            finally
+            {
+                document.Close();
             }
         }
 

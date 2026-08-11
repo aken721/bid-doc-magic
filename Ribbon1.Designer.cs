@@ -38,6 +38,7 @@ namespace BidDocMagic
             this.group1 = this.Factory.CreateRibbonGroup();
             this.btnConvertToPDF = this.Factory.CreateRibbonButton();
             this.btnPdfSettings = this.Factory.CreateRibbonButton();
+            this.btnToImgPdf = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.SuspendLayout();
@@ -51,6 +52,7 @@ namespace BidDocMagic
             // group1
             // 
             this.group1.Items.Add(this.btnConvertToPDF);
+            this.group1.Items.Add(this.btnToImgPdf);
             this.group1.Items.Add(this.btnPdfSettings);
             this.group1.Label = "双层PDF工具";
             this.group1.Name = "group1";
@@ -73,6 +75,15 @@ namespace BidDocMagic
             this.btnPdfSettings.ShowImage = true;
             this.btnPdfSettings.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnPdfSettings_Click);
             // 
+            // btnToImgPdf
+            // 
+            this.btnToImgPdf.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnToImgPdf.Image = global::BidDocMagic.Properties.Resources.img_pdf;
+            this.btnToImgPdf.Label = "生成图片PDF";
+            this.btnToImgPdf.Name = "btnToImgPdf";
+            this.btnToImgPdf.ShowImage = true;
+            this.btnToImgPdf.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnToImgPdf_Click);
+            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -93,6 +104,7 @@ namespace BidDocMagic
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnConvertToPDF;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnPdfSettings;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnToImgPdf;
     }
 
     partial class ThisRibbonCollection
